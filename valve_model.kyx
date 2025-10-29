@@ -43,9 +43,10 @@ Problem
                     t' = 1,
                     & (x1 >= 0 & x2 >= 0 & f1 >= 0 & f2 >= 0) & t <= T
                 };
+                ? t >= Tmin;
             }*
         }^@
     >
-    ((x1 < L1 | x1 > H1 | x2 < L2 | x2 > H2) &
+    ((x1 < L1 | x1 > H1) &
         isBinary(P1) & isBinary(V1) & isBinary(P2) & isBinary(V2))
 End.

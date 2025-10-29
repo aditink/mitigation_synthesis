@@ -45,10 +45,11 @@ Problem
                     ometric' = -x2 + ci * (P1 * (1 - V1) + P2 * (1 - V2)),
                     & (x1 >= 0 & x2 >= 0 & f1 >= 0 & f2 >= 0) & t <= T
                 };
+                ? t >= Tmin;
             }*
         }^@
     >
-    ((x1 < L1 | x1 > H1 | x2 < L2 | x2 > H2) &
+    ((x1 < L1 | x1 > H1) &
       /* tracker variables */
       globalTime = 0 & ometric = 0 & rmetric = 0
       /* other side conditions. */
