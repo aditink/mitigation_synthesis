@@ -1,0 +1,57 @@
+Special variables:
+  Real globalTime;    /* Global time tracker. */
+  Real ometric;       /* Operational cost metric. */
+  Real rmetric;       /* Redundancy cost metric. */
+
+Operational metric:
+  Linear cost to losing water.
+  Cost to keep valve i closed but pump i on is ci units per time.
+
+Redundancy metric:
+  Cost opi to using redundant PLC P{I}_PLC2.
+
+Problem
+    <
+        {
+            {
+                {
+                    /* First layer of PLCs. */
+                    P1_PLC1: P1 := *;
+                    V1_PLC1: V1 := *;
+                    P2_PLC1: P2 := *;
+                    V2_PLC1: V2 := *;
+                    ? isBinary(P1) & isBinary(V1) & isBinary(P2) & isBinary(V2);
+                };
+                {
+                    /* Second layer of PLCs. */
+                    old_P1 := P1;
+                    old_V1 := V1;
+                    old_P2 := P2;
+                    old_V2 := V2;
+                    P1_PLC2: P1 := *;
+                    V1_PLC2: V1 := *;
+                    P2_PLC2: P2 := *;
+                    V2_PLC2: V2 := *;
+                    /* Penalty for using redundant PLCs */
+                    rmetric := rmetric + (|old_P1 - P1| * op1 + |old_V1 - V1| * ov1 + |old_P2 - P2| * op2 + |old_V2 - V2| * ov2);
+                    ? isBinary(P1) & isBinary(V1) & isBinary(P2) & isBinary(V2);
+                }
+                t:=0;
+                { 
+                    x1' = V1 * f1 - V2 * P2 * f2, 
+                    x2' = V2 * P2 * f2,
+                    t' = 1,
+                    globalTime' = -1,
+                    ometric' = -x2 + ci * (P1 * (1 - V1) + P2 * (1 - V2)),
+                    & (x1 >= 0 & x2 >= 0 & f1 >= 0 & f2 >= 0) & t <= T
+                };
+            }*
+        }^@
+    >
+    ((x1 < L1 | x1 > H1 | x2 < L2 | x2 > H2) &
+      /* tracker variables */
+      globalTime = 0 & ometric = 0 & rmetric = 0
+      /* other side conditions. */
+      isBinary(P1) & isBinary(V1) & isBinary(P2) & isBinary(V2);
+    ) 
+End.

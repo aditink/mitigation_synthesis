@@ -1,0 +1,51 @@
+
+Definitions
+    Bool isBinary(Real v) := (v = 0) | (v = 1);
+End.
+
+ProgramVariables
+    Real P1;            /* Pump 1. If 1, pump is on; if 0, off. */
+    Real V1;            /* Valve 1. If 1, valve is open; if 0, closed. */
+    Real P2;            /* Pump 2. If 1, pump is on; if 0, off. */
+    Real V2;            /* Valve 2. If 1, valve is open; if 0, closed. */   
+    Real x1;            /* Water level for tank 1. */
+    Real x2;            /* Water level for tank 2. */
+    Real f1;            /* Inflow rate for tank 1. */
+    Real f2;            /* Inflow rate for tank 2. */
+    Real t;             /* Time variable for control loop latency tracking. */
+    Real T;             /* Maximum control loop latency. */
+End.
+
+Problem
+    <
+        {
+            {
+                {
+                    /* First layer of PLCs. */
+                    P1_PLC1: P1 := *;
+                    V1_PLC1: V1 := *;
+                    P2_PLC1: P2 := *;
+                    V2_PLC1: V2 := *;
+                    ? isBinary(P1) & isBinary(V1) & isBinary(P2) & isBinary(V2);
+                };
+                {
+                    /* Second layer of PLCs. */
+                    P1_PLC2: P1 := *;
+                    V1_PLC2: V1 := *;
+                    P2_PLC2: P2 := *;
+                    V2_PLC2: V2 := *;
+                    ? isBinary(P1) & isBinary(V1) & isBinary(P2) & isBinary(V2);
+                }
+                t:=0;
+                { 
+                    x1' = V1 * f1 - V2 * P2 * f2, 
+                    x2' = V2 * P2 * f2,
+                    t' = 1,
+                    & (x1 >= 0 & x2 >= 0 & f1 >= 0 & f2 >= 0) & t <= T
+                };
+            }*
+        }^@
+    >
+    ((x1 < L1 | x1 > H1 | x2 < L2 | x2 > H2) &
+        isBinary(P1) & isBinary(V1) & isBinary(P2) & isBinary(V2))
+End.

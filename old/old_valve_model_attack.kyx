@@ -1,0 +1,58 @@
+<
+{
+  {
+  /* Initial conditions. */
+    ?(
+      LL < L1 & L1 <= x1 & x1 <= H1 & H1 < HH
+    & LL < L2 & L2 <= x2 & x2 <= H2 & H2 < HH
+    & f1 >= 0 & f2 >= 0 
+    & t = 0 
+    & attacked = 0
+    & c = 0
+    & mitigated = 0);
+    {
+      /* Direct Attack. */
+      {
+        /* Can attack only once. */
+        ? attacked = 0;
+        attacked := 1;
+        c := 0;
+        P1 := *;
+        V1 := *;
+        P2 := *;
+        V2 := *;
+        ?(P1 = 1 | P1 = 0) & (P2 = 1 | P2 = 0) & (V1 = 1 | V1 = 0) & (V2 = 1 | V2 = 0);
+        /* Set maxC parametric in attack. */
+        (maxC := *)^@;
+      }
+      ++
+      ?1 = 1;
+    }^@;
+    {
+      /* One-shot mitigation space. */
+      {
+        ? c>maxC;
+        c := 0;
+        mitigated := 1;
+        P1 := *;
+        V1 := *;
+        P2 := *;
+        V2 := *;
+        ?(P1 = 1 | P1 = 0) & (P2 = 1 | P2 = 0) & (V1 = 1 | V1 = 0) & (V2 = 1 | V2 = 0);
+      }
+      ++ ?1 = 1;
+    }
+    t:=0;
+    { 
+      x1' = V1 * f1 - V2 * P2 * f2, 
+      x2' = V2 * P2 * f2,
+      t' = 1,
+      c' = attacked - mitigated,
+      & (x1 >= 0 & x2 >= 0 & f1 >= 0 & f2 >= 0) & t <= T
+    };
+  }*
+}^@
+>
+(
+  ?(x1 < L1 | x1 > H1 | x2 < L2 | x2 > H2)
+)
