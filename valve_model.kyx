@@ -1,5 +1,6 @@
 
 Definitions
+    /* Check if a real typed variable is actually binary (0 or 1). */
     Bool isBinary(Real v) := (v = 0) | (v = 1);
 End.
 
@@ -8,12 +9,13 @@ ProgramVariables
     Real V1;            /* Valve 1. If 1, valve is open; if 0, closed. */
     Real P2;            /* Pump 2. If 1, pump is on; if 0, off. */
     Real V2;            /* Valve 2. If 1, valve is open; if 0, closed. */   
-    Real x1;            /* Water level for tank 1. */
-    Real x2;            /* Water level for tank 2. */
-    Real f1;            /* Inflow rate for tank 1. */
-    Real f2;            /* Inflow rate for tank 2. */
+    Real x1;            /* Water level for tank. */
+    Real x2;            /* Water outflow for tank. */
+    Real f1;            /* Inflow rate for tank. */
+    Real f2;            /* Outflow rate for tank. */
     Real t;             /* Time variable for control loop latency tracking. */
     Real T;             /* Maximum control loop latency. */
+    Real Tmin;          /* Minimum control loop latency. */
 End.
 
 Problem

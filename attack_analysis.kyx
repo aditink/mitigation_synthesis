@@ -37,7 +37,7 @@ Problem
                     P2_PLC2: P2 := *;
                     V2_PLC2: V2 := *;
                     /* Penalty for using redundant PLCs */
-                    rmetric := rmetric + (|old_P1 - P1| * op1 + |old_V1 - V1| * ov1 + |old_P2 - P2| * op2 + |old_V2 - V2| * ov2);
+                    rmetric := rmetric - (|old_P1 - P1| * op1 + |old_V1 - V1| * ov1 + |old_P2 - P2| * op2 + |old_V2 - V2| * ov2);
                     ? isBinary(P1) & isBinary(V1) & isBinary(P2) & isBinary(V2);
                 }
                 t:=0;
@@ -46,7 +46,7 @@ Problem
                     x2' = V2 * P2 * f2,
                     t' = 1,
                     attackTimer' = 1,
-                    ometric' = -x2 + (P1 * (1 - V1) * c1 + P2 * (1 - V2) * c2),
+                    ometric' = -x2 - c1 * (P1 * (1 - V1)) - c2* (P2 * (1 - V2)),
                     & (x1 >= 0 & x2 >= 0 & f1 >= 0 & f2 >= 0) & t <= T
                 };
                 ? t >= Tmin;
@@ -54,18 +54,18 @@ Problem
         }^@ 
         /* Invariant:
             /* Attack over. */
-            (safe(x1, x2) & attackTimer > AttackTime & ometric = 0 & rmetric = 0)
+            (safe(x1, x2) & attackTimer > AttackTime & ometric >= 0 & rmetric >= 0)
             /* Safety by draining. Extra margin because of tank capacity with margin of error due to loop latency.  */
-            | (safe(x1, x2) & ometric = (AttackTime-attackTimer)*f2 - (H2-x2-T/(f2-f1))/f2 & rmetric = 0 & f2>=f1 & T * (f2-f1) >= f2*(x2 - L1) & T*f1 <= H1 - (L1 + T * (f2-f1)))
+            | (safe(x1, x2) & ometric >= (AttackTime-attackTimer)*f2 - (H2-x2-T/(f2-f1))/f2 & rmetric >= 0 & f2>=f1 & T * (f2-f1) >= f2*(x2 - L1) & T*f1 <= H1 - (L1 + T * (f2-f1)))
             /* Safety by overriding valve. */
-            | (safe(x1, x2) & ometric = (AttackTime-attackTimer) * c1 & rmetric = ov1 * (AttackTime-attackTimer) / Tmin)
+            | (safe(x1, x2) & ometric >= (AttackTime-attackTimer + T) * c1 & rmetric >= ov1 * ceil((AttackTime-attackTimer) / Tmin))
             /* Safety by overriding pump. */
-            | (safe(x1, x2) & ometric = 0 & rmetric = ov2 * (AttackTime-attackTimer) / Tmin)
+            | (safe(x1, x2) & ometric >= 0 & rmetric >= ov2 * ceil((AttackTime-attackTimer) / Tmin))
         */
     >
     ((x1 < L1 | x1 > H1) &
       /* tracker variables */
-      globalTime = 0 & ometric = 0 & rmetric = 0
+      attackTimer >= 0 & ometric >= 0 & rmetric >= 0
       /* other side conditions. */
       isBinary(P1) & isBinary(V1) & isBinary(P2) & isBinary(V2);
     ) 

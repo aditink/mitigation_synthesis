@@ -1,0 +1,22 @@
+This is an example of how verification would catch an error when reasoning about the tank system under overflow attack.
+Consider the dGL game from attack_analysis.kyx.
+
+Suppose that we have already proved that the following formula, I1, is a correct precondition of the outer loop (roughly speaking, this means it is an invariant of the loop in dGL that implies the postcondition [1]).
+    I1: (safe(x1, x2) & attackTimer > AttackTime & ometric >= 0 & rmetric >= 0)
+Which means that if the attack is over we can keep the system safe forever with no cost (intuitively we just shut off the input pump and so the system stays static and sees neither redundancy costs nor operational costs).
+
+But now I want to expand my analysis: I think that during the attack I can also keep the system safe by overriding the first pump and switching it off. I think this should incur some redundancy cost, equal to the cost factor ov2 times the maximum number of times I would need to override the pump, (AttackTime-attackTimer) / Tmin, and no operational costs since I do not lose any water nor keep a valve shut with the corresponding pump on. So I hypothesize that the following is a correct precondition (invariant).
+    I2: (safe(x1, x2) & ometric >= 0 & rmetric >= ov2 * (AttackTime-attackTimer) / Tmin) | I1
+Then, in KeYmaera X, I would try to prove that I2 is indeed a correct invariant of the outer loop.
+That is,
+    (1) The invariant implies that postcondition: should prove if we add the assumptions ov2>=0 and AttackTime<=attackTimer since both I1 and the other disjunct have safe(x1, x2) and the other side conditions make it so that rmetric >= 0 is implied by rmetric >= ov2 * (AttackTime-attackTimer) / Tmin. The extra conditions that we end up needing to add to I2 don't seem especially physically important to me yet, Our repaired I2 is:
+        I2: (safe(x1, x2) & ometric >= 0 & rmetric >= ov2 * (AttackTime-attackTimer) / Tmin & ov2>=0 & AttackTime<=attackTimer) | I1
+    (2) The invariant is preserved by the loop body (this is where the non-trivial verification happens).
+    If we tried to argue this proof, consider the case where Tmin > attackTimer > 0. In this case, rmetric is going to decrement by ov2, but since (AttackTime-attackTimer) / Tmin < 1 rmetric will end up negative. In the end neither will I1 hold, nor the other disjunct of I2, since after this iteration, attackTimer>AttackTime.
+    So we will realize that I2 is subtly flawed and what we really wanted was not rmetric >= ov2 * (AttackTime-attackTimer) / Tmin but rather rmetric >= ov2 * ceil((AttackTime-attackTimer) / Tmin).
+    Then the Tmin > attackTimer > 0 case would pass.
+In this way, we have caught a subtle error in our cost reasoning about the system. Since cost analysis is not safety-critical one might argue why this formalism is necessary.
+But with a proving/synthesis agent to come up with these costs automatically, this groundwork would provide us with a way to analyze the system design tradeoffs at low human-effort cost and high confidence.
+
+Footnotes:
+[1] The difference is just that we also want to compute intermediate preconditions over the loop body and check whether the invariant is compatible with them, which it should be unless there is "information loss" over, e.g., a differential equation whose exact solution was too complex to compute for. For the exact logical formulation, see https://arxiv.org/abs/2508.05997.
