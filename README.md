@@ -19,3 +19,7 @@
     * If we can arbitrarily add new variables, are there even any theoretical limitations to what we can express?
     * On the other hand, is there a systematic way to do instrumentation so that adding typical metrics is easy for practitioners?
 - Do we really want control envelopes, or is dGL enough? I think envelopes make more sense if we want to somehow extract mitigation as a part of our story, otherwise dGL could be enough.
+
+## Paper
+
+Overleaf (currently very little, tentative text): https://www.overleaf.com/1633871886gmcpnjrykzsg#fe8c83
